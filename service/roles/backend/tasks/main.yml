@@ -1,7 +1,7 @@
 ---
 # tasks file for backend
 - name: Load variables from a02_backend.yml
-  include_vars: /home/tanpham/4640/TanPham_assignment3/service/group_vars/a02_backend.yml
+  include_vars: /home/tanpham/acit4640-aws/service/group_vars/a02_backend.yml
 # tasks file for {{ user }}
 - name: install packages
   ansible.builtin.package:

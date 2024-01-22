@@ -1,7 +1,7 @@
 ---
 # tasks file for database
 - name: Load variables from a02_db.yml
-  include_vars: /home/tanpham/4640/TanPham_assignment3/service/group_vars/a02_db.yml
+  include_vars: /home/tanpham/acit4640-aws/service/group_vars/a02_db.yml
 
 - name: install packages
   ansible.builtin.package:
