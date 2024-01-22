@@ -1,0 +1,9 @@
+---
+# handlers file for web
+- name: reload nginx service
+  tags: nginx, server_reload
+  systemd:
+    name: nginx
+    state: reloaded
+    enabled: true
+    daemon_reload: true

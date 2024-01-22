@@ -1,0 +1,21 @@
+---
+- name: Roles for the database servers
+  hosts: a02_backend
+  remote_user: ubuntu
+  become: True
+  roles:
+    - db
+
+- name: Roles for the backend servers
+  hosts: a02_backend
+  remote_user: ubuntu
+  become: True
+  roles:
+    - backend
+
+- name: Roles for the web servers
+  hosts: a02_web
+  remote_user: ubuntu
+  become: True
+  roles:
+    - web

@@ -1,0 +1,6 @@
+---
+# vars file for db
+db_user: example
+db_pass: secure
+db_name: backend
+db_table: item

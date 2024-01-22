@@ -1,0 +1,56 @@
+---
+# tasks file for web
+- name: Load variables from a02_web.yml
+  include_vars: /home/tanpham/4640/TanPham_assignment3/service/group_vars/a02_web.yml
+# install nginx
+- name: install the nginx package
+  tags: nginx
+  apt:
+    name: nginx
+    state: present
+    update_cache: yes
+
+- name: Create user '{{ user }}' with home directory '/{{ user }}'
+  ansible.builtin.user:
+    name: "{{ user }}"
+    home: /{{ user }}
+    state: present
+
+- name: Give permissions to {{ user }} folder
+  ansible.builtin.file:
+    path: /{{ user }}
+    mode: u=rwx,g=rx,o=rx
+
+- name: Creates web_root folder
+  ansible.builtin.file:
+    path: /{{ user }}/web_root
+    state: directory
+
+- name: Put html document to the server
+  tags: copy_html
+  template:
+    src: ../../../setup/frontend/index.html
+    dest: /{{ user }}/web_root/index.html
+    owner: www-data
+    group: www-data
+    mode: u=rw,g=r,o=r
+  notify:
+    - reload nginx service
+
+- name: Put nginx config file to the server
+  template:
+    src: ../../../setup/default
+    dest: /etc/nginx/sites-available/default
+
+- name: Change proxy_pass in Nginx configuration
+  ansible.builtin.lineinfile:
+    path: /etc/nginx/sites-available/default
+    regexp: '^\s*proxy_pass http://localhost:5000;$'
+    line: "        proxy_pass http://{{ a02_backend_ip }}:5000;"
+  become: true
+
+- name: Enable site, link nginx config
+  file:
+    src: /etc/nginx/sites-available/default
+    dest: /etc/nginx/sites-enabled/default
+    state: link

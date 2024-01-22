@@ -1,0 +1,8 @@
+aws_region = "us-west-2"
+project_name = "a02"
+pub_subnet_cidr = "192.168.2.0/24"
+priv_subnet_cidr = "192.168.1.0/24"
+home_net = "24.84.236.0/24"
+bcit_net = "142.232.0.0/16"
+ssh_key_name = "acit_4640"
+ami_id = "ami-03839f1dba75bb628"

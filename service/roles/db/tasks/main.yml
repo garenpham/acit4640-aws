@@ -1,0 +1,64 @@
+---
+# tasks file for database
+- name: Load variables from a02_db.yml
+  include_vars: /home/tanpham/4640/TanPham_assignment3/service/group_vars/a02_db.yml
+
+- name: install packages
+  ansible.builtin.package:
+    update_cache: true
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - mysql-server
+    - python3-pymysql
+  become: true
+  tags:
+    - system_setup
+
+- name: Removes all anonymous user accounts
+  community.mysql.mysql_user:
+    name: ''
+    login_host: "{{ a02_db_ip }}"
+    login_user: root
+    login_password: "{{ db_root_pass }}"
+    state: absent
+
+- name: delete test db
+  community.mysql.mysql_db:
+    login_host: "{{ a02_db_ip }}"
+    login_user: root
+    login_password: "{{ db_root_pass }}"
+    name: test
+    state: absent
+
+- name: Create user with password, all database privileges in backend db
+  community.mysql.mysql_user:
+    state: present
+    name: "{{ db_user }}"
+    password: "{{ db_pass }}"
+    host: '%'
+    priv: "{{ db_name }}.*: ALL"
+    login_host: "{{ a02_db_ip }}"
+    login_user: root
+    login_password: "{{ db_root_pass }}"
+
+- name: Create 'item' table in 'backend' db if it doesn't exist
+  community.mysql.mysql_query:
+    login_db: "{{ db_name }}"
+    query: |
+      CREATE TABLE IF NOT EXISTS {{ db_table }} (
+        name varchar(30) NOT NULL,
+        bcit_id varchar(10) NOT NULL,
+        PRIMARY KEY (bcit_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+    login_host: "{{ a02_db_ip }}"
+    login_user: root
+    login_password: "{{ db_root_pass }}"
+
+- name: Insert data
+  community.mysql.mysql_query:
+    login_db: "{{ db_name }}"
+    query: INSERT INTO {{ db_name }}.{{ db_table }} (name, bcit_id) VALUES ('Tan','A01215507')
+    login_host: "{{ a02_db_ip }}"
+    login_user: root
+    login_password: "{{ db_root_pass }}"

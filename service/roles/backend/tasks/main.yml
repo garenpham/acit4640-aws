@@ -1,0 +1,71 @@
+---
+# tasks file for backend
+- name: Load variables from a02_backend.yml
+  include_vars: /home/tanpham/4640/TanPham_assignment3/service/group_vars/a02_backend.yml
+# tasks file for {{ user }}
+- name: install packages
+  ansible.builtin.package:
+    update_cache: true
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - libmysqlclient-dev
+    - pkg-config
+    - python3-dev
+    - python3-pip
+  become: true
+  tags:
+    - system_setup
+
+- name: Create user '{{ user }}' with home directory '/{{ user }}'
+  ansible.builtin.user:
+    name: "{{ user }}"
+    home: /{{ user }}
+    state: present
+
+- name: Give permissions to {{ user }} folder
+  ansible.builtin.file:
+    path: /{{ user }}
+    mode: u=rwx,g=rx,o=rx
+
+- name: Creates src folder
+  ansible.builtin.file:
+    path: /{{ user }}/src
+    state: directory
+
+- name: Copy setup file to the {{ user }}
+  ansible.builtin.copy:
+    src: ../../../setup/backend/
+    dest: /{{ user }}/src
+
+- name: Update MYSQL_HOST in {{ user }}.conf
+  ansible.builtin.lineinfile:
+    path: /{{ user }}/src/{{ user }}.conf
+    regexp: '^MYSQL_HOST ='
+    line: 'MYSQL_HOST = {{ a02_db_ip }}'
+
+- name: Install Python packages from requirements.txt
+  pip:
+    requirements: /{{ user }}/src/requirements.txt
+    extra_args: --break-system-packages
+
+- name: setup {{ user }} service unit file
+  ansible.builtin.copy:
+    src: ../../../setup/backend.service
+    dest: /etc/systemd/system/{{ user }}.service
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  tags:
+    - service_setup
+
+- name: Change ExecStart in systemd service file
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/system/{{ user }}.service
+    regexp: '^ExecStart='
+    line: 'ExecStart=python3 /{{ user }}/src/wsgi.py'
+  become: true
+  notify:
+    - reload daemons
+    - restart {{ user }}

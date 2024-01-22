@@ -1,0 +1,11 @@
+---
+# handlers file for backend
+- name: reload daemons
+  ansible.builtin.systemd:
+    daemon_reload: true
+  become: true
+- name: restart backend
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: true
+    name: backend 
